@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} Task | TaskMaster Pro{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-7">
+      
+      <!-- Back Link -->
+      <div class="mb-3">
+        <a href="{{ url_for('index') }}" class="text-decoration-none text-muted small">
+          <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+        </a>
+      </div>
+
+      <div class="content-card">
+        <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+          <div class="brand-icon">
+            <i class="bi {% if action == 'Create' %}bi-plus-circle-fill{% else %}bi-pencil-square{% endif %}"></i>
+          </div>
+          <div>
+            <h4 class="fw-bold mb-0 text-dark">{{ action }} Task</h4>
+            <p class="text-muted small mb-0">
+              {% if action == 'Create' %}
+                Fill out the form below to add a new task to your tracking board.
+              {% else %}
+                Update task specifications, priority, or completion status.
+              {% endif %}
+            </p>
+          </div>
+        </div>
+
+        <!-- Form Handling: POST Method with Server-side & Client-side validation -->
+        <form method="POST" action="{% if action == 'Create' %}{{ url_for('create_task') }}{% else %}{{ url_for('edit_task', task_id=task.id) }}{% endif %}" novalidate>
+          
+          <!-- Task Title -->
+          <div class="mb-3">
+            <div class="d-flex justify-content-between">
+              <label for="title" class="form-label fw-semibold">Task Title <span class="text-danger">*</span></label>
+              <span class="small text-muted" id="title-char-count">0/150</span>
+            </div>
+            <input 
+              type="text" 
+              class="form-control form-control-lg" 
+              id="title" 
+              name="title" 
+              required 
+              maxlength="150"
+              placeholder="e.g. Implement user authentication middleware"
+              value="{{ form_data.get('title') if form_data.get('title') is not none else (task.title if task else '') }}"
+            >
+            <div class="form-text">Clear, concise title summarizing the objective.</div>
+          </div>
+
+          <!-- Description -->
+          <div class="mb-3">
+            <label for="description" class="form-label fw-semibold">Detailed Description</label>
+            <textarea 
+              class="form-control" 
+              id="description" 
+              name="description" 
+              rows="4" 
+              placeholder="Add acceptance criteria, technical notes, or checklist items..."
+            >{{ form_data.get('description') if form_data.get('description') is not none else (task.description if task else '') }}</textarea>
+          </div>
+
+          <!-- Row for Category & Due Date -->
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label for="category" class="form-label fw-semibold">Category / Tag</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="category" 
+                name="category" 
+                list="category-suggestions" 
+                placeholder="e.g. Backend, Frontend, Study"
+                value="{{ form_data.get('category') if form_data.get('category') is not none else (task.category if task else 'General') }}"
+              >
+              <datalist id="category-suggestions">
+                <option value="Interview Prep">
+                <option value="Backend">
+                <option value="Frontend">
+                <option value="Database">
+                <option value="DevOps">
+                <option value="Personal">
+                <option value="Study">
+              </datalist>
+            </div>
+
+            <div class="col-sm-6">
+              <label for="due_date" class="form-label fw-semibold">Due Date</label>
+              <input 
+                type="date" 
+                class="form-control" 
+                id="due_date" 
+                name="due_date" 
+                value="{{ form_data.get('due_date') if form_data.get('due_date') is not none else (task.due_date.strftime('%Y-%m-%d') if task and task.due_date else '') }}"
+              >
+            </div>
+          </div>
+
+          <!-- Row for Priority & Status -->
+          <div class="row g-3 mb-4">
+            <div class="col-sm-6">
+              <label for="priority" class="form-label fw-semibold">Priority Level</label>
+              {% set current_priority = form_data.get('priority') if form_data.get('priority') is not none else (task.priority if task else 'Medium') %}
+              <select class="form-select" id="priority" name="priority">
+                <option value="Urgent" {% if current_priority == 'Urgent' %}selected{% endif %}>Urgent (Critical)</option>
+                <option value="High" {% if current_priority == 'High' %}selected{% endif %}>High</option>
+                <option value="Medium" {% if current_priority == 'Medium' %}selected{% endif %}>Medium</option>
+                <option value="Low" {% if current_priority == 'Low' %}selected{% endif %}>Low</option>
+              </select>
+            </div>
+
+            <div class="col-sm-6">
+              <label for="status" class="form-label fw-semibold">Current Status</label>
+              {% set current_status = form_data.get('status') if form_data.get('status') is not none else (task.status if task else 'Pending') %}
+              <select class="form-select" id="status" name="status">
+                <option value="Pending" {% if current_status == 'Pending' %}selected{% endif %}>Pending</option>
+                <option value="In Progress" {% if current_status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                <option value="Completed" {% if current_status == 'Completed' %}selected{% endif %}>Completed</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+              Cancel
+            </a>
+            <button type="submit" class="btn btn-primary-custom d-flex align-items-center gap-1">
+              <i class="bi bi-check-lg"></i>
+              <span>{% if action == 'Create' %}Create Task{% else %}Save Changes{% endif %}</span>
+            </button>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
